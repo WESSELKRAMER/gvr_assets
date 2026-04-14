@@ -84,7 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
             : ""
         }
         <a href="${item.url}" target="_blank" rel="noopener noreferrer">
-  Bekijk locatie ↗
+  Bekijk locatie
 </a>
       </div>
     `;
