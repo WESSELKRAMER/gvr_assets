@@ -89,13 +89,21 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function createMarkerElement(item) {
-    const el = document.createElement("button");
-    el.className = "map-marker";
-    el.type = "button";
-    el.dataset.cat = item.category;
-    el.setAttribute("aria-label", item.title);
-    return el;
-  }
+  const el = document.createElement("button");
+  el.className = "map-marker";
+  el.type = "button";
+  el.dataset.cat = item.category;
+  el.setAttribute("aria-label", item.title);
+
+  // TEMP placeholder SVG (replace later per category)
+  el.innerHTML = `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"/>
+    </svg>
+  `;
+
+  return el;
+}
 
   function makeMarker(item) {
     const el = createMarkerElement(item);
