@@ -83,7 +83,9 @@ document.addEventListener("DOMContentLoaded", () => {
             ? `<p style="margin:0 0 10px 0;">${description}</p>`
             : ""
         }
-        <a href="${item.url}" style="text-decoration:underline;">Bekijk</a>
+        <a href="${item.url}" target="_blank" rel="noopener noreferrer">
+  Bekijk locatie ↗
+</a>
       </div>
     `;
   }
