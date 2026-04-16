@@ -236,3 +236,33 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  const filtersBox = document.querySelector(".map-filters");
+  const filtersToggle = document.querySelector(".map-filters-toggle");
+
+  if (!filtersBox || !filtersToggle) return;
+
+  const mobileBreakpoint = 991;
+
+  function isMobile() {
+    return window.innerWidth <= mobileBreakpoint;
+  }
+
+  function setDefaultFiltersState() {
+    const shouldBeOpen = !isMobile();
+
+    filtersBox.classList.toggle("is-open", shouldBeOpen);
+    filtersToggle.setAttribute("aria-expanded", shouldBeOpen ? "true" : "false");
+  }
+
+  filtersToggle.addEventListener("click", () => {
+    const isOpen = filtersBox.classList.toggle("is-open");
+    filtersToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+  });
+
+  window.addEventListener("resize", setDefaultFiltersState);
+
+  setDefaultFiltersState();
+});
