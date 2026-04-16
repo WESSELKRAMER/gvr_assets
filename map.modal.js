@@ -237,12 +237,12 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-
 document.addEventListener("DOMContentLoaded", () => {
   const filtersBox = document.querySelector(".map-filters");
   const filtersToggle = document.querySelector(".map-filters-toggle");
+  const arrow = document.querySelector(".map-filters-arrow svg");
 
-  if (!filtersBox || !filtersToggle) return;
+  if (!filtersBox || !filtersToggle || !arrow || typeof gsap === "undefined") return;
 
   const mobileBreakpoint = 991;
 
@@ -250,19 +250,40 @@ document.addEventListener("DOMContentLoaded", () => {
     return window.innerWidth <= mobileBreakpoint;
   }
 
-  function setDefaultFiltersState() {
-    const shouldBeOpen = !isMobile();
+  function setArrow(isOpen, animate = true) {
+    gsap.killTweensOf(arrow);
 
-    filtersBox.classList.toggle("is-open", shouldBeOpen);
-    filtersToggle.setAttribute("aria-expanded", shouldBeOpen ? "true" : "false");
+    if (animate) {
+      gsap.to(arrow, {
+        rotate: isOpen ? 0 : 180,
+        duration: 0.2,
+        ease: "power2.out",
+        overwrite: true
+      });
+    } else {
+      gsap.set(arrow, {
+        rotate: isOpen ? 0 : 180
+      });
+    }
+  }
+
+  function setState(isOpen, animateArrow = false) {
+    filtersBox.classList.toggle("is-open", isOpen);
+    filtersToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    setArrow(isOpen, animateArrow);
+  }
+
+  function setDefaultState() {
+    const shouldBeOpen = !isMobile();
+    setState(shouldBeOpen, false);
   }
 
   filtersToggle.addEventListener("click", () => {
-    const isOpen = filtersBox.classList.toggle("is-open");
-    filtersToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    const isOpen = !filtersBox.classList.contains("is-open");
+    setState(isOpen, true);
   });
 
-  window.addEventListener("resize", setDefaultFiltersState);
+  window.addEventListener("resize", setDefaultState);
 
-  setDefaultFiltersState();
+  setDefaultState();
 });
