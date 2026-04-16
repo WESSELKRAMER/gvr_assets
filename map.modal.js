@@ -255,14 +255,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (animate) {
       gsap.to(arrow, {
-        rotate: isOpen ? 0 : 180,
+        scaleY: isOpen ? 1 : -1,
         duration: 0.2,
         ease: "power2.out",
         overwrite: true
       });
     } else {
       gsap.set(arrow, {
-        rotate: isOpen ? 0 : 180
+        scaleY: isOpen ? 1 : -1
       });
     }
   }
@@ -274,7 +274,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function setDefaultState() {
-    const shouldBeOpen = !isMobile();
+    const shouldBeOpen = window.innerWidth > mobileBreakpoint;
     setState(shouldBeOpen, false);
   }
 
