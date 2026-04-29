@@ -131,7 +131,7 @@ function initShutterPageTransition() {
           each: 0.2,
           from: "end"
         },
-        ease: "power4.out"
+        ease: "power1.out"
       })
       .set(overlay, {
         visibility: "hidden",
