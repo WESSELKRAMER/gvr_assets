@@ -110,37 +110,38 @@ function initShutterPageTransition() {
   }
 
   function playIntro() {
-    const rows = buildBlocks();
+  const rows = buildBlocks();
 
-    return gsap
-      .timeline({
-        delay: 0.3
-      })
-      .set(overlay, {
-        visibility: "visible",
-        pointerEvents: "auto"
-      })
-      .set(rows, {
-        scaleY: 1,
-        transformOrigin: "top center"
-      })
-      .to(rows, {
-        scaleY: 0,
-        duration: 0.82,
-        stagger: {
-          each: 0.18,
-          from: "end"
-        },
-        ease: "power1.out"
-      })
-      .set(overlay, {
-        visibility: "hidden",
-        pointerEvents: "none"
-      })
-      .call(() => {
-        document.documentElement.classList.remove("is_transitioning");
-      });
-  }
+  return gsap
+    .timeline({
+      delay: 0.3
+    })
+    .set(overlay, {
+      visibility: "visible",
+      pointerEvents: "auto"
+    })
+    .set(rows, {
+      scaleY: 1,
+      transformOrigin: "top center",
+      overflow: "hidden"
+    })
+    .to(rows, {
+      height: 0,
+      duration: 0.82,
+      stagger: {
+        each: 0.18,
+        from: "end"
+      },
+      ease: "power1.out"
+    })
+    .set(overlay, {
+      visibility: "hidden",
+      pointerEvents: "none"
+    })
+    .call(() => {
+      document.documentElement.classList.remove("is_transitioning");
+    });
+}
 
   document.documentElement.classList.add("is_transitioning");
   playIntro();
