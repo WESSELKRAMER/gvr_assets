@@ -5,6 +5,8 @@ function initShutterPageTransition() {
   const panel = document.querySelector("[data-page-shutter-panel]");
   if (!overlay || !panel) return;
 
+  const seenKey = "vdj_shutter_seen";
+
   const colors = {
     sky: ["#94B8E9", "#3B7AFD", "#1D438F", "#001E5E"],
     sand: ["#E1BF73", "#BA9B56", "#785B1A", "#4F3806"],
@@ -109,39 +111,54 @@ function initShutterPageTransition() {
     return Array.from(panel.children);
   }
 
-  function playIntro() {
-  const rows = buildBlocks();
-
-  return gsap
-    .timeline({
-      delay: 0.3
-    })
-    .set(overlay, {
-      visibility: "visible",
-      pointerEvents: "auto"
-    })
-    .set(rows, {
-      scaleY: 1,
-      transformOrigin: "top center",
-      overflow: "hidden"
-    })
-    .to(rows, {
-      height: 0,
-      duration: 0.7,
-      stagger: {
-        each: 0.18,
-        from: "end"
-      },
-      ease: "power1.out"
-    })
-    .set(overlay, {
+  function resetToIdle() {
+    document.documentElement.classList.remove("is_transitioning");
+    gsap.set(overlay, {
       visibility: "hidden",
       pointerEvents: "none"
-    })
-    .call(() => {
-      document.documentElement.classList.remove("is_transitioning");
     });
-}
+  }
+
+  function playIntro() {
+    const rows = buildBlocks();
+
+    return gsap
+      .timeline({
+        delay: 0.3
+      })
+      .set(overlay, {
+        visibility: "visible",
+        pointerEvents: "auto"
+      })
+      .set(rows, {
+        overflow: "hidden"
+      })
+      .to(rows, {
+        height: 0,
+        duration: 0.7,
+        stagger: {
+          each: 0.18,
+          from: "end"
+        },
+        ease: "power1.out"
+      })
+      .set(overlay, {
+        visibility: "hidden",
+        pointerEvents: "none"
+      })
+      .call(() => {
+        document.documentElement.classList.remove("is_transitioning");
+        sessionStorage.setItem(seenKey, "true");
+      });
+  }
+
+  const navEntry = performance.getEntriesByType("navigation")[0];
+  const isRefresh = navEntry && navEntry.type === "reload";
+
+  if (sessionStorage.getItem(seenKey) === "true" && !isRefresh) {
+    resetToIdle();
+    return;
+  }
 
   document.documentElement.classList.add("is_transitioning");
   playIntro();
