@@ -135,7 +135,7 @@ function initShutterPageTransition() {
       })
       .to(rows, {
         height: 0,
-        duration: 0.7,
+        duration: 0.5,
         stagger: {
           each: 0.18,
           from: "end"
