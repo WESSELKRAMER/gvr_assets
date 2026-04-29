@@ -126,12 +126,12 @@ function initShutterPageTransition() {
       })
       .to(rows, {
         scaleY: 0,
-        duration: 0.85,
+        duration: 0.96,
         stagger: {
-          each: 0.16,
+          each: 0.2,
           from: "end"
         },
-        ease: "power4.inOut"
+        ease: "power4.out"
       })
       .set(overlay, {
         visibility: "hidden",
