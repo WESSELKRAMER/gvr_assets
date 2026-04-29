@@ -1,12 +1,9 @@
-// Page transition - first visit only
 function initShutterPageTransition() {
   if (typeof gsap === "undefined") return;
 
   const overlay = document.querySelector("[data-page-shutter]");
   const panel = document.querySelector("[data-page-shutter-panel]");
   if (!overlay || !panel) return;
-
-  const seenKey = "vdj_shutter_seen";
 
   const colors = {
     sky: ["#94B8E9", "#3B7AFD", "#1D438F", "#001E5E"],
@@ -26,12 +23,7 @@ function initShutterPageTransition() {
   }
 
   function pickTwoSeparatedShades() {
-    const pairs = [
-      [0, 2],
-      [0, 3],
-      [1, 3]
-    ];
-
+    const pairs = [[0, 2], [0, 3], [1, 3]];
     return pairs[Math.floor(Math.random() * pairs.length)];
   }
 
@@ -68,7 +60,6 @@ function initShutterPageTransition() {
     for (let attempt = 0; attempt < 100; attempt++) {
       const big = 60 + Math.random() * 10;
       const small = 5 + Math.random() * 2;
-
       const remaining = 100 - big - small;
 
       const a = 8 + Math.random() * 12;
@@ -91,7 +82,6 @@ function initShutterPageTransition() {
       heights = shuffle(heights);
 
       const biggestIndex = heights.indexOf(Math.max(...heights));
-
       if (biggestIndex === 2) {
         [heights[2], heights[1]] = [heights[1], heights[2]];
       }
@@ -120,50 +110,36 @@ function initShutterPageTransition() {
   }
 
   function playIntro() {
-  const rows = buildBlocks();
+    const rows = buildBlocks();
 
-  return gsap
-    .timeline({
-      delay: 0.25
-    })
-    .set(overlay, {
-      visibility: "visible",
-      pointerEvents: "auto"
-    })
-    .set(rows, {
-      scaleY: 1,
-      transformOrigin: "top center"
-    })
-    .to(rows, {
-      scaleY: 0,
-      duration: 0.85,
-      stagger: {
-        each: 0.16,
-        from: "end"
-      },
-      ease: "power4.inOut"
-    })
-    .set(overlay, {
-      visibility: "hidden",
-      pointerEvents: "none"
-    })
-    .call(() => {
-      document.documentElement.classList.remove("is_transitioning");
-      sessionStorage.setItem(seenKey, "true");
-    });
-}
-
-  function resetToIdle() {
-    document.documentElement.classList.remove("is_transitioning");
-    gsap.set(overlay, {
-      visibility: "hidden",
-      pointerEvents: "none"
-    });
-  }
-
-  if (sessionStorage.getItem(seenKey) === "true") {
-    resetToIdle();
-    return;
+    return gsap
+      .timeline({
+        delay: 0.25
+      })
+      .set(overlay, {
+        visibility: "visible",
+        pointerEvents: "auto"
+      })
+      .set(rows, {
+        scaleY: 1,
+        transformOrigin: "top center"
+      })
+      .to(rows, {
+        scaleY: 0,
+        duration: 0.85,
+        stagger: {
+          each: 0.16,
+          from: "end"
+        },
+        ease: "power4.inOut"
+      })
+      .set(overlay, {
+        visibility: "hidden",
+        pointerEvents: "none"
+      })
+      .call(() => {
+        document.documentElement.classList.remove("is_transitioning");
+      });
   }
 
   document.documentElement.classList.add("is_transitioning");
