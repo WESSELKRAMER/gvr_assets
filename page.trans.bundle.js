@@ -51,11 +51,9 @@ function initShutterPageTransition() {
   }
 
   function hasThreeSimilarHeights(heights) {
-    for (let i = 0; i < heights.length; i++) {
-      const similar = heights.filter((h) => Math.abs(h - heights[i]) < 5);
-      if (similar.length >= 3) return true;
-    }
-    return false;
+    return heights.some((height) => {
+      return heights.filter((other) => Math.abs(other - height) < 5).length >= 3;
+    });
   }
 
   function generateHeights() {
@@ -74,9 +72,7 @@ function initShutterPageTransition() {
         heights.every((h) => h >= 5) &&
         !hasThreeSimilarHeights(heights) &&
         heights.every((h, i) =>
-          heights.every(
-            (other, j) => i === j || Math.abs(h - other) >= 5
-          )
+          heights.every((other, j) => i === j || Math.abs(h - other) >= 5)
         );
 
       if (!valid) continue;
@@ -84,6 +80,7 @@ function initShutterPageTransition() {
       heights = shuffle(heights);
 
       const biggestIndex = heights.indexOf(Math.max(...heights));
+
       if (biggestIndex === 2) {
         [heights[2], heights[1]] = [heights[1], heights[2]];
       }
@@ -105,6 +102,7 @@ function initShutterPageTransition() {
       block.classList.add("page_shutter_row");
       block.style.backgroundColor = color;
       block.style.height = `${blockHeights[index]}vh`;
+      block.dataset.height = blockHeights[index];
       panel.appendChild(block);
     });
 
@@ -113,6 +111,7 @@ function initShutterPageTransition() {
 
   function resetToIdle() {
     document.documentElement.classList.remove("is_transitioning");
+
     gsap.set(overlay, {
       visibility: "hidden",
       pointerEvents: "none"
@@ -135,9 +134,12 @@ function initShutterPageTransition() {
       })
       .to(rows, {
         height: 0,
-        duration: 0.5,
+        duration: (index, row) => {
+          const height = parseFloat(row.dataset.height) || 10;
+          return 0.38 + (height / 100) * 0.65;
+        },
         stagger: {
-          each: 0.18,
+          each: 0.14,
           from: "end"
         },
         ease: "power1.out"
