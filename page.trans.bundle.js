@@ -120,37 +120,39 @@ function initShutterPageTransition() {
   }
 
   function playIntro() {
-    const rows = buildBlocks();
+  const rows = buildBlocks();
 
-    return gsap
-      .timeline()
-      .set(overlay, {
-        visibility: "visible",
-        pointerEvents: "auto"
-      })
-      .set(rows, {
-        scaleY: 1,
-        transformOrigin: "top center"
-      })
-      .to(rows, {
-        scaleY: 0,
-        duration: 1,
-        stagger: {
-          each: 0.08,
-          from: "end",
-          ease: "power2.inOut"
-        },
-        ease: "expo.inOut"
-      })
-      .set(overlay, {
-        visibility: "hidden",
-        pointerEvents: "none"
-      })
-      .call(() => {
-        document.documentElement.classList.remove("is_transitioning");
-        sessionStorage.setItem(seenKey, "true");
-      });
-  }
+  return gsap
+    .timeline({
+      delay: 0.25
+    })
+    .set(overlay, {
+      visibility: "visible",
+      pointerEvents: "auto"
+    })
+    .set(rows, {
+      scaleY: 1,
+      transformOrigin: "bottom center"
+    })
+    .to(rows, {
+      scaleY: 0,
+      duration: 0.9,
+      stagger: {
+        each: 0.09,
+        from: "end",
+        ease: "power2.inOut"
+      },
+      ease: "expo.inOut"
+    })
+    .set(overlay, {
+      visibility: "hidden",
+      pointerEvents: "none"
+    })
+    .call(() => {
+      document.documentElement.classList.remove("is_transitioning");
+      sessionStorage.setItem(seenKey, "true");
+    });
+}
 
   function resetToIdle() {
     document.documentElement.classList.remove("is_transitioning");
