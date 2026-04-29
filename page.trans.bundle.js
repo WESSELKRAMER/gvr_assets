@@ -1,42 +1,22 @@
-//Page transition
+// Page transition - first visit only
 function initShutterPageTransition() {
-  const defaultRows = 6;
-  const defaultDuration = 0.43;
-  const defaultStagger = 0.075;
-  const defaultEase = "expo.inOut";
-
-  const homepageIntroRows = 6;
-  const homepageIntroDuration = 0.7;
-  const homepageIntroStagger = 0.1;
-  const homepageIntroEase = "expo.inOut";
-
-  const transitionFlagKey = "shutter_transition";
-  const transitionColorsKey = "shutter_transition_colors";
-  const homepageIntroSeenKey = "homepage_intro_seen";
-
-  const colorPalette = [
-    "#06246f",
-    "#d7d86a",
-    "#6b4a00",
-    "#8b9444",
-    "#d9be72",
-    "#F09A3A",
-    "#1d1d1d"
-  ];
+  if (typeof gsap === "undefined") return;
 
   const overlay = document.querySelector("[data-page-shutter]");
   const panel = document.querySelector("[data-page-shutter-panel]");
+  if (!overlay || !panel) return;
 
-  if (!overlay || !panel) return null;
+  const seenKey = "vdj_shutter_seen";
 
-  function createRow(color) {
-    const row = document.createElement("div");
-    row.classList.add("page_shutter_row");
-    row.style.backgroundColor = color;
-    return row;
-  }
+  const colors = {
+    sky: ["#94B8E9", "#3B7AFD", "#1D438F", "#001E5E"],
+    sand: ["#E1BF73", "#BA9B56", "#785B1A", "#4F3806"],
+    moss: ["#B8B455", "#828C44", "#64701A", "#3A4A24"],
+    leaves: ["#75C87E", "#369340", "#0E871A", "#005B09"],
+    sunset: ["#EEBE89", "#FBB66A", "#F09A3A", "#F58911"]
+  };
 
-  function shuffleArray(array) {
+  function shuffle(array) {
     const copy = [...array];
     for (let i = copy.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -45,241 +25,148 @@ function initShutterPageTransition() {
     return copy;
   }
 
-  function generateRowColors(rowCount) {
-    if (!colorPalette.length) return Array(rowCount).fill("#000000");
-    if (colorPalette.length === 1) return Array(rowCount).fill(colorPalette[0]);
+  function pickTwoSeparatedShades() {
+    const pairs = [
+      [0, 2],
+      [0, 3],
+      [1, 3]
+    ];
 
-    const colors = [];
-    let lastColor = null;
-    let pool = shuffleArray(colorPalette);
+    return pairs[Math.floor(Math.random() * pairs.length)];
+  }
 
-    for (let i = 0; i < rowCount; i++) {
-      if (!pool.length) {
-        pool = shuffleArray(colorPalette);
+  function generateColors() {
+    const hueNames = Object.keys(colors);
+    const repeatedHue = hueNames[Math.floor(Math.random() * hueNames.length)];
+    const repeatedShades = pickTwoSeparatedShades();
+
+    const remainingHues = shuffle(
+      hueNames.filter((hue) => hue !== repeatedHue)
+    ).slice(0, 3);
+
+    const picked = [
+      colors[repeatedHue][repeatedShades[0]],
+      colors[repeatedHue][repeatedShades[1]],
+      ...remainingHues.map((hue) => {
+        const shade = Math.floor(Math.random() * colors[hue].length);
+        return colors[hue][shade];
+      })
+    ];
+
+    return shuffle(picked);
+  }
+
+  function hasThreeSimilarHeights(heights) {
+    for (let i = 0; i < heights.length; i++) {
+      const similar = heights.filter((h) => Math.abs(h - heights[i]) < 5);
+      if (similar.length >= 3) return true;
+    }
+    return false;
+  }
+
+  function generateHeights() {
+    for (let attempt = 0; attempt < 100; attempt++) {
+      const big = 60 + Math.random() * 10;
+      const small = 5 + Math.random() * 2;
+
+      const remaining = 100 - big - small;
+
+      const a = 8 + Math.random() * 12;
+      const b = 8 + Math.random() * 12;
+      const c = remaining - a - b;
+
+      let heights = [big, small, a, b, c];
+
+      const valid =
+        heights.every((h) => h >= 5) &&
+        !hasThreeSimilarHeights(heights) &&
+        heights.every((h, i) =>
+          heights.every(
+            (other, j) => i === j || Math.abs(h - other) >= 5
+          )
+        );
+
+      if (!valid) continue;
+
+      heights = shuffle(heights);
+
+      const biggestIndex = heights.indexOf(Math.max(...heights));
+
+      if (biggestIndex === 2) {
+        [heights[2], heights[1]] = [heights[1], heights[2]];
       }
 
-      let color = pool.find((item) => item !== lastColor);
-
-      if (!color) color = pool[0];
-
-      const index = pool.indexOf(color);
-      if (index > -1) {
-        pool.splice(index, 1);
-      }
-
-      colors.push(color);
-      lastColor = color;
+      return heights;
     }
 
-    return colors;
+    return shuffle([62, 6, 9, 15, 8]);
   }
 
-  function saveTransitionColors(colors) {
-    sessionStorage.setItem(transitionColorsKey, JSON.stringify(colors));
-  }
-
-  function getSavedTransitionColors() {
-    const raw = sessionStorage.getItem(transitionColorsKey);
-    if (!raw) return null;
-
-    try {
-      const parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed : null;
-    } catch {
-      return null;
-    }
-  }
-
-  function clearSavedTransitionColors() {
-    sessionStorage.removeItem(transitionColorsKey);
-  }
-
-  function buildRows(colors, rowCount) {
+  function buildBlocks() {
     panel.innerHTML = "";
 
-    const targetCount = rowCount || defaultRows;
-    const rowColors =
-      Array.isArray(colors) && colors.length
-        ? colors.slice(0, targetCount)
-        : generateRowColors(targetCount);
+    const blockColors = generateColors();
+    const blockHeights = generateHeights();
 
-    while (rowColors.length < targetCount) {
-      rowColors.push(colorPalette[rowColors.length % colorPalette.length] || "#000000");
-    }
+    blockColors.forEach((color, index) => {
+      const block = document.createElement("div");
+      block.classList.add("page_shutter_row");
+      block.style.backgroundColor = color;
+      block.style.height = `${blockHeights[index]}vh`;
+      panel.appendChild(block);
+    });
 
-    const fragment = document.createDocumentFragment();
-
-    for (let i = 0; i < targetCount; i++) {
-      const row = createRow(rowColors[i]);
-      fragment.appendChild(row);
-    }
-
-    panel.appendChild(fragment);
     return Array.from(panel.children);
   }
 
-  function ensureRowsExist(colors, rowCount) {
-    if (panel.children.length) return Array.from(panel.children);
-    return buildRows(colors, rowCount);
-  }
-
-  function cover() {
-    const rowColors = generateRowColors(defaultRows);
-    saveTransitionColors(rowColors);
-
-    const rows = buildRows(rowColors, defaultRows);
+  function playIntro() {
+    const rows = buildBlocks();
 
     return gsap
       .timeline()
-      .set(overlay, { visibility: "visible", pointerEvents: "auto" })
-      .set(rows, {
-        scaleY: 0,
-        transformOrigin: "bottom center"
+      .set(overlay, {
+        visibility: "visible",
+        pointerEvents: "auto"
       })
-      .to(rows, {
-        scaleY: 1,
-        duration: defaultDuration,
-        stagger: { each: defaultStagger, from: "end" },
-        ease: defaultEase
-      });
-  }
-
-  function reveal() {
-    const savedColors = getSavedTransitionColors();
-    const rows = ensureRowsExist(savedColors, defaultRows);
-
-    return gsap
-      .timeline()
-      .set(overlay, { visibility: "visible", pointerEvents: "auto" })
       .set(rows, {
         scaleY: 1,
         transformOrigin: "top center"
       })
       .to(rows, {
         scaleY: 0,
-        duration: defaultDuration,
-        stagger: { each: defaultStagger, from: "end" },
-        ease: defaultEase
+        duration: 1,
+        stagger: {
+          each: 0.08,
+          from: "end",
+          ease: "power2.inOut"
+        },
+        ease: "expo.inOut"
       })
-      .set(overlay, { pointerEvents: "none", visibility: "hidden" })
+      .set(overlay, {
+        visibility: "hidden",
+        pointerEvents: "none"
+      })
       .call(() => {
         document.documentElement.classList.remove("is_transitioning");
-        clearSavedTransitionColors();
-      });
-  }
-
-  function playHomepageIntro() {
-    const introColors = generateRowColors(homepageIntroRows);
-    const rows = buildRows(introColors, homepageIntroRows);
-
-    return gsap
-      .timeline()
-      .set(overlay, { visibility: "visible", pointerEvents: "auto" })
-      .set(rows, {
-        scaleY: 1,
-        transformOrigin: "top center"
-      })
-      .to(rows, {
-        scaleY: 0,
-        duration: homepageIntroDuration,
-        stagger: { each: homepageIntroStagger, from: "end" },
-        ease: homepageIntroEase
-      })
-      .set(overlay, { pointerEvents: "none", visibility: "hidden" })
-      .call(() => {
-        document.documentElement.classList.remove("is_transitioning");
-        sessionStorage.setItem(homepageIntroSeenKey, "true");
+        sessionStorage.setItem(seenKey, "true");
       });
   }
 
   function resetToIdle() {
     document.documentElement.classList.remove("is_transitioning");
-    gsap.set(overlay, { pointerEvents: "none", visibility: "hidden" });
+    gsap.set(overlay, {
+      visibility: "hidden",
+      pointerEvents: "none"
+    });
   }
 
-  function isHomepage() {
-    const path = window.location.pathname;
-    return path === "/" || path === "/index.html";
+  if (sessionStorage.getItem(seenKey) === "true") {
+    resetToIdle();
+    return;
   }
 
-  function hasSeenHomepageIntro() {
-    return sessionStorage.getItem(homepageIntroSeenKey) === "true";
-  }
-
-  return {
-    cover,
-    reveal,
-    playHomepageIntro,
-    resetToIdle,
-    isHomepage,
-    hasSeenHomepageIntro,
-    transitionFlagKey
-  };
+  document.documentElement.classList.add("is_transitioning");
+  playIntro();
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  const shutter = initShutterPageTransition();
-  if (!shutter) return;
-
-  const navEntry = performance.getEntriesByType("navigation")[0];
-  const isBackForwardNavigation = navEntry && navEntry.type === "back_forward";
-  const shouldRevealFromLink =
-    sessionStorage.getItem(shutter.transitionFlagKey) === "true";
-
-  if (shouldRevealFromLink) {
-    sessionStorage.removeItem(shutter.transitionFlagKey);
-    shutter.reveal();
-  } else if (isBackForwardNavigation) {
-    shutter.reveal();
-  } else if (shutter.isHomepage() && !shutter.hasSeenHomepageIntro()) {
-    document.documentElement.classList.add("is_transitioning");
-    shutter.playHomepageIntro();
-  } else {
-    shutter.resetToIdle();
-  }
-
-  document.addEventListener("click", (event) => {
-    const link = event.target.closest("a[href]");
-    if (!link) return;
-
-    const href = link.getAttribute("href");
-    if (!href) return;
-
-    const isAnchor = href.startsWith("#");
-    const isMailto = href.startsWith("mailto:");
-    const isTel = href.startsWith("tel:");
-    const isJavascript = href.startsWith("javascript:");
-    const isBlank = link.target === "_blank";
-    const isDownload = link.hasAttribute("download");
-    const isExternal = link.origin !== window.location.origin;
-
-    if (
-      isAnchor ||
-      isMailto ||
-      isTel ||
-      isJavascript ||
-      isBlank ||
-      isDownload ||
-      isExternal
-    ) {
-      return;
-    }
-
-    event.preventDefault();
-    sessionStorage.setItem(shutter.transitionFlagKey, "true");
-    document.documentElement.classList.add("is_transitioning");
-
-    shutter.cover().eventCallback("onComplete", () => {
-      window.location.href = href;
-    });
-  });
-});
-
-window.addEventListener("pageshow", (event) => {
-  if (!event.persisted) return;
-
-  const shutter = initShutterPageTransition();
-  if (!shutter) return;
-
-  shutter.reveal();
-});
+document.addEventListener("DOMContentLoaded", initShutterPageTransition);
