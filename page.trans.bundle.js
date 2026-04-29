@@ -132,15 +132,14 @@ function initShutterPageTransition() {
     })
     .set(rows, {
       scaleY: 1,
-      transformOrigin: "bottom center"
+      transformOrigin: "top center"
     })
     .to(rows, {
       scaleY: 0,
-      duration: 0.9,
+      duration: 0.55,
       stagger: {
-        each: 0.09,
-        from: "end",
-        ease: "power2.inOut"
+        each: 0.22,
+        from: "end"
       },
       ease: "expo.inOut"
     })
