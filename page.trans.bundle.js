@@ -114,7 +114,7 @@ function initShutterPageTransition() {
 
     return gsap
       .timeline({
-        delay: 0.25
+        delay: 0.3
       })
       .set(overlay, {
         visibility: "visible",
@@ -126,9 +126,9 @@ function initShutterPageTransition() {
       })
       .to(rows, {
         scaleY: 0,
-        duration: 0.96,
+        duration: 0.82,
         stagger: {
-          each: 0.2,
+          each: 0.18,
           from: "end"
         },
         ease: "power1.out"
