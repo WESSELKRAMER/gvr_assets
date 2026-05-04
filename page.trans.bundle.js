@@ -123,7 +123,7 @@ function initShutterPageTransition() {
 
     return gsap
       .timeline({
-        delay: 0.3
+        delay: 0.5
       })
       .set(overlay, {
         visibility: "visible",
