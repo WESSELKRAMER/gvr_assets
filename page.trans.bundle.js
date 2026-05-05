@@ -133,6 +133,19 @@ function initShutterPageTransition() {
         overflow: "hidden"
       })
       .to(rows, {
+        height: (index, row) => {
+          const currentHeight = parseFloat(row.dataset.height) || 10;
+          const variation = index % 2 === 0 ? 8 : -8;
+          return `${Math.max(5, currentHeight + variation)}vh`;
+        },
+        duration: 0.45,
+        stagger: {
+          each: 0.12,
+          from: "start"
+        },
+        ease: "power2.inOut"
+      })
+      .to(rows, {
         height: 0,
         duration: (index, row) => {
           const height = parseFloat(row.dataset.height) || 10;
