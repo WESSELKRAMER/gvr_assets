@@ -133,73 +133,48 @@ function initShutterPageTransition() {
   }
 
   function playIntro() {
-  const rows = buildBlocks();
+    const rows = buildBlocks();
 
-  const originalWeights = rows.map((row) => parseFloat(row.dataset.height));
-  const landscapeWeights = [...originalWeights].sort((a, b) => b - a);
-  const waveWeights = originalWeights.map((weight, index) => {
-    const wave = Math.sin(index * 1.35) * 18;
-    return Math.max(5, weight + wave);
-  });
+    const originalWeights = rows.map((row) => parseFloat(row.dataset.height));
+    const landscapeWeights = [...originalWeights].sort((a, b) => b - a);
 
-  return gsap
-    .timeline({
-      delay: 0.25
-    })
-    .set(overlay, {
-      visibility: "visible",
-      pointerEvents: "auto"
-    })
-    .set(panel, {
-      yPercent: 0
-    })
-    .set(rows, {
-      overflow: "hidden"
-    })
-    .to(rows, {
-      flexGrow: (index) => landscapeWeights[index],
-      duration: 0.48,
-      stagger: {
-        each: 0.08,
-        from: "center"
-      },
-      ease: "power3.inOut"
-    })
-    .to(rows, {
-      flexGrow: (index) => waveWeights[index],
-      duration: 0.34,
-      stagger: {
-        each: 0.06,
-        from: "edges"
-      },
-      ease: "sine.inOut"
-    }, "-=0.12")
-    .to(rows, {
-      flexGrow: (index) => landscapeWeights[index],
-      duration: 0.38,
-      stagger: {
-        each: 0.06,
-        from: "center"
-      },
-      ease: "power3.inOut"
-    }, "-=0.08")
-    .to({}, {
-      duration: 0.06
-    })
-    .to(panel, {
-      yPercent: -100,
-      duration: 0.62,
-      ease: "power3.inOut"
-    })
-    .set(overlay, {
-      visibility: "hidden",
-      pointerEvents: "none"
-    })
-    .call(() => {
-      document.documentElement.classList.remove("is_transitioning");
-      sessionStorage.setItem(seenKey, "true");
-    });
-}
+    return gsap
+      .timeline({
+        delay: 0.5
+      })
+      .set(overlay, {
+        visibility: "visible",
+        pointerEvents: "auto"
+      })
+      .set(panel, {
+        yPercent: 0
+      })
+      .set(rows, {
+        overflow: "hidden"
+      })
+      .to(rows, {
+        flexGrow: (index) => landscapeWeights[index],
+        duration: 0.75,
+        stagger: {
+          each: 0.15,
+          from: "center"
+        },
+        ease: "power3.inOut"
+      })
+      .to(panel, {
+        yPercent: -100,
+        duration: 0.95,
+        ease: "power3.inOut"
+      })
+      .set(overlay, {
+        visibility: "hidden",
+        pointerEvents: "none"
+      })
+      .call(() => {
+        document.documentElement.classList.remove("is_transitioning");
+        sessionStorage.setItem(seenKey, "true");
+      });
+  }
 
   const navEntry = performance.getEntriesByType("navigation")[0];
   const isRefresh = navEntry && navEntry.type === "reload";
