@@ -121,6 +121,9 @@ function initShutterPageTransition() {
   function playIntro() {
     const rows = buildBlocks();
 
+    const originalHeights = rows.map((row) => parseFloat(row.dataset.height));
+    const landscapeHeights = [...originalHeights].sort((a, b) => b - a);
+
     return gsap
       .timeline({
         delay: 0.5
@@ -133,17 +136,13 @@ function initShutterPageTransition() {
         overflow: "hidden"
       })
       .to(rows, {
-        height: (index, row) => {
-          const currentHeight = parseFloat(row.dataset.height) || 10;
-          const variation = index % 2 === 0 ? 8 : -8;
-          return `${Math.max(5, currentHeight + variation)}vh`;
-        },
-        duration: 0.45,
+        height: (index) => `${landscapeHeights[index]}vh`,
+        duration: 0.7,
         stagger: {
-          each: 0.12,
-          from: "start"
+          each: 0.15,
+          from: "center"
         },
-        ease: "power2.inOut"
+        ease: "power3.inOut"
       })
       .to(rows, {
         height: 0,
