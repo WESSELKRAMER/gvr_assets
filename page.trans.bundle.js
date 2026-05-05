@@ -8,7 +8,7 @@ function initShutterPageTransition() {
   const seenKey = "vdj_shutter_seen";
 
   const colors = {
-    sky: ["#94B8E9", "#3B7AFD", "#1D438F", "#001E5E
+    sky: ["#94B8E9", "#3B7AFD", "#1D438F", "#001E5E],
     sand: ["#E1BF73", "#BA9B56", "#785B1A", "#4F3806"],
     moss: ["#B8B455", "#828C44", "#64701A", "#3A4A24"],
     leaves: ["#75C87E", "#369340", "#0E871A", "#005B09"],
