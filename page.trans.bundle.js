@@ -97,11 +97,20 @@ function initShutterPageTransition() {
     const blockColors = generateColors();
     const blockHeights = generateHeights();
 
+    gsap.set(panel, {
+      display: "flex",
+      flexDirection: "column",
+      height: "100vh"
+    });
+
     blockColors.forEach((color, index) => {
       const block = document.createElement("div");
       block.classList.add("page_shutter_row");
       block.style.backgroundColor = color;
-      block.style.height = `${blockHeights[index]}vh`;
+      block.style.height = "auto";
+      block.style.flexBasis = "0";
+      block.style.flexGrow = blockHeights[index];
+      block.style.flexShrink = "1";
       block.dataset.height = blockHeights[index];
       panel.appendChild(block);
     });
@@ -121,8 +130,8 @@ function initShutterPageTransition() {
   function playIntro() {
     const rows = buildBlocks();
 
-    const originalHeights = rows.map((row) => parseFloat(row.dataset.height));
-    const landscapeHeights = [...originalHeights].sort((a, b) => b - a);
+    const originalWeights = rows.map((row) => parseFloat(row.dataset.height));
+    const landscapeWeights = [...originalWeights].sort((a, b) => b - a);
 
     return gsap
       .timeline({
@@ -136,7 +145,7 @@ function initShutterPageTransition() {
         overflow: "hidden"
       })
       .to(rows, {
-        height: (index) => `${landscapeHeights[index]}vh`,
+        flexGrow: (index) => landscapeWeights[index],
         duration: 0.7,
         stagger: {
           each: 0.15,
@@ -145,7 +154,7 @@ function initShutterPageTransition() {
         ease: "power3.inOut"
       })
       .to(rows, {
-        height: 0,
+        flexGrow: 0,
         duration: (index, row) => {
           const height = parseFloat(row.dataset.height) || 10;
           return 0.38 + (height / 100) * 0.65;
