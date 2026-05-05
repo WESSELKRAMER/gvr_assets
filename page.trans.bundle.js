@@ -144,7 +144,7 @@ function initShutterPageTransition() {
 
   return gsap
     .timeline({
-      delay: 0.5
+      delay: 0.25
     })
     .set(overlay, {
       visibility: "visible",
@@ -158,37 +158,37 @@ function initShutterPageTransition() {
     })
     .to(rows, {
       flexGrow: (index) => landscapeWeights[index],
-      duration: 0.75,
+      duration: 0.48,
       stagger: {
-        each: 0.15,
+        each: 0.08,
         from: "center"
       },
       ease: "power3.inOut"
     })
     .to(rows, {
       flexGrow: (index) => waveWeights[index],
-      duration: 0.55,
+      duration: 0.34,
       stagger: {
-        each: 0.1,
+        each: 0.06,
         from: "edges"
       },
       ease: "sine.inOut"
-    })
+    }, "-=0.12")
     .to(rows, {
       flexGrow: (index) => landscapeWeights[index],
-      duration: 0.6,
+      duration: 0.38,
       stagger: {
-        each: 0.12,
+        each: 0.06,
         from: "center"
       },
       ease: "power3.inOut"
-    })
+    }, "-=0.08")
     .to({}, {
-      duration: 0.15
+      duration: 0.06
     })
     .to(panel, {
       yPercent: -100,
-      duration: 0.95,
+      duration: 0.62,
       ease: "power3.inOut"
     })
     .set(overlay, {
