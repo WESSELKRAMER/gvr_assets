@@ -100,7 +100,8 @@ function initShutterPageTransition() {
     gsap.set(panel, {
       display: "flex",
       flexDirection: "column",
-      height: "100vh"
+      height: "100vh",
+      yPercent: 0
     });
 
     blockColors.forEach((color, index) => {
@@ -125,6 +126,10 @@ function initShutterPageTransition() {
       visibility: "hidden",
       pointerEvents: "none"
     });
+
+    gsap.set(panel, {
+      yPercent: -100
+    });
   }
 
   function playIntro() {
@@ -141,29 +146,25 @@ function initShutterPageTransition() {
         visibility: "visible",
         pointerEvents: "auto"
       })
+      .set(panel, {
+        yPercent: 0
+      })
       .set(rows, {
         overflow: "hidden"
       })
       .to(rows, {
         flexGrow: (index) => landscapeWeights[index],
-        duration: 0.7,
+        duration: 0.75,
         stagger: {
           each: 0.15,
           from: "center"
         },
         ease: "power3.inOut"
       })
-      .to(rows, {
-        flexGrow: 0,
-        duration: (index, row) => {
-          const height = parseFloat(row.dataset.height) || 10;
-          return 0.38 + (height / 100) * 0.65;
-        },
-        stagger: {
-          each: 0.14,
-          from: "end"
-        },
-        ease: "power2.inOut"
+      .to(panel, {
+        yPercent: -100,
+        duration: 0.95,
+        ease: "power3.inOut"
       })
       .set(overlay, {
         visibility: "hidden",
