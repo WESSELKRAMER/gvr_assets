@@ -132,49 +132,57 @@ function initShutterPageTransition() {
     });
   }
 
-  function playIntro() {
-    const rows = buildBlocks();
+ function playIntro() {
+  const rows = buildBlocks();
 
-    const originalWeights = rows.map((row) => parseFloat(row.dataset.height));
-    const landscapeWeights = [...originalWeights].sort((a, b) => b - a);
+  const originalWeights = rows.map((row) => parseFloat(row.dataset.height));
+  const landscapeWeights = [...originalWeights].sort((a, b) => b - a);
 
-    return gsap
-      .timeline({
-        delay: 0.5
-      })
-      .set(overlay, {
-        visibility: "visible",
-        pointerEvents: "auto"
-      })
-      .set(panel, {
-        yPercent: 0
-      })
-      .set(rows, {
-        overflow: "hidden"
-      })
-      .to(rows, {
-        flexGrow: (index) => landscapeWeights[index],
-        duration: 0.75,
-        stagger: {
-          each: 0.15,
-          from: "center"
-        },
-        ease: "power3.inOut"
-      })
-      .to(panel, {
-        yPercent: -100,
-        duration: 0.95,
-        ease: "power3.inOut"
-      })
-      .set(overlay, {
-        visibility: "hidden",
-        pointerEvents: "none"
-      })
-      .call(() => {
-        document.documentElement.classList.remove("is_transitioning");
-        sessionStorage.setItem(seenKey, "true");
-      });
-  }
+  return gsap
+    .timeline({
+      delay: 0.5
+    })
+    .set(overlay, {
+      visibility: "visible",
+      pointerEvents: "auto"
+    })
+    .set(panel, {
+      yPercent: 0
+    })
+    .set(rows, {
+      overflow: "hidden"
+    })
+    .to(rows, {
+      flexGrow: (index) => landscapeWeights[index],
+      duration: 0.75,
+      stagger: {
+        each: 0.15,
+        from: "center"
+      },
+      ease: "power3.inOut"
+    })
+    .to({}, {
+      duration: 0.08
+    })
+    .to(panel, {
+      yPercent: -104,
+      duration: 0.82,
+      ease: "power3.in"
+    })
+    .to(panel, {
+      yPercent: -100,
+      duration: 0.18,
+      ease: "power2.out"
+    })
+    .set(overlay, {
+      visibility: "hidden",
+      pointerEvents: "none"
+    })
+    .call(() => {
+      document.documentElement.classList.remove("is_transitioning");
+      sessionStorage.setItem(seenKey, "true");
+    });
+}
 
   const navEntry = performance.getEntriesByType("navigation")[0];
   const isRefresh = navEntry && navEntry.type === "reload";
