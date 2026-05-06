@@ -171,7 +171,7 @@ function initShutterPageTransition() {
     })
     .to(panel, {
       yPercent: -100,
-      duration: 0.18,
+      duration: 0.22,
       ease: "power2.out"
     })
     .set(overlay, {
