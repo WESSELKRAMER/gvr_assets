@@ -16,12 +16,31 @@ document.addEventListener("DOMContentLoaded", () => {
   `,
 
   "fietsen-wandelen": `
-    <svg viewBox="0 0 24 16" fill="none" aria-hidden="true">
-      <path d="M19 11L16 0.75H13.75M6.75 2.75H9.75M10.9643 7.575L7.85714 3.25M16.6607 4.95L5 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
-      <path d="M19 15.25C21.3472 15.25 23.25 13.3472 23.25 11C23.25 8.65279 21.3472 6.75 19 6.75C16.6528 6.75 14.75 8.65279 14.75 11C14.75 13.3472 16.6528 15.25 19 15.25Z" stroke="currentColor" stroke-width="1.5"/>
-      <path d="M5 15.25C7.34721 15.25 9.25 13.3472 9.25 11C9.25 8.65279 7.34721 6.75 5 6.75C2.65279 6.75 0.75 8.65279 0.75 11C0.75 13.3472 2.65279 15.25 5 15.25Z" stroke="currentColor" stroke-width="1.5"/>
-    </svg>
-  `,
+  <svg viewBox="0 0 133.9 131.79" fill="none" aria-hidden="true">
+    <rect x="16.27" y="16.26" width="101.36" height="114.02" rx="13.29" ry="13.29"
+      stroke="currentColor" stroke-width="3"/>
+
+    <path d="M80.03,59.14h24.31c7.34,0,13.29-5.95,13.29-13.29v-16.3c0-7.34-5.95-13.29-13.29-13.29H29.55c-7.34,0-13.29,5.95-13.29,13.29v16.3c0,7.34,5.95,13.29,13.29,13.29h24.3"
+      stroke="currentColor" stroke-width="3" fill="none"/>
+
+    <circle cx="66.95" cy="59.14" r="13.09"
+      stroke="currentColor" stroke-width="3" fill="none"/>
+
+    <path d="M59.7,1.5h14.5c4.17,0,7.56,3.39,7.56,7.56v7.21h-29.61v-7.21c0-4.17,3.39-7.56,7.56-7.56Z"
+      stroke="currentColor" stroke-width="3" fill="none"/>
+
+    <path d="M111.83,54.33h26.36c4.17,0,7.56,3.39,7.56,7.56v7.21h-41.47v-7.21c0-4.17,3.39-7.56,7.56-7.56Z"
+      transform="translate(186.73 -63.3) rotate(90)"
+      stroke="currentColor" stroke-width="3" fill="none"/>
+
+    <path d="M-11.85,54.34H29.62v7.21c0,4.17-3.39,7.56-7.56,7.56H-4.3c-4.17,0-7.56-3.39-7.56-7.56v-7.21h0Z"
+      transform="translate(70.6 52.84) rotate(90)"
+      stroke="currentColor" stroke-width="3" fill="none"/>
+
+    <rect x="29.49" y="89.18" width="74.92" height="29.74" rx="11.52" ry="11.52"
+      stroke="currentColor" stroke-width="3" fill="none"/>
+  </svg>
+`,
 
   "horeca": `
     <svg viewBox="0 0 16 18" fill="none" aria-hidden="true">
