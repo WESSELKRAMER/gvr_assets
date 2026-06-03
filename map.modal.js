@@ -199,6 +199,25 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Apply a pre-filter from a data-map-filter attribute value.
+  // Pass a comma-separated string like "horeca,varen-watersport",
+  // or null/undefined to reset all checkboxes to checked.
+  function applyPreFilter(filterAttr) {
+    const checkboxes = document.querySelectorAll('.map-filters input[type="checkbox"]');
+
+    if (filterAttr) {
+      const requestedCats = filterAttr.split(",").map((s) => normalizeCategory(s.trim()));
+      checkboxes.forEach((input) => {
+        input.checked = requestedCats.includes(normalizeCategory(input.value));
+      });
+    } else {
+      // No filter specified — reset all to checked
+      checkboxes.forEach((input) => {
+        input.checked = true;
+      });
+    }
+  }
+
   function openMapOverlay() {
     mapOverlay.classList.remove("is-hidden");
 
@@ -230,9 +249,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // Updated: reads optional data-map-filter attribute to pre-select categories
   document.querySelectorAll("[data-map-open]").forEach((trigger) => {
     trigger.addEventListener("click", (event) => {
       event.preventDefault();
+
+      const filterAttr = trigger.getAttribute("data-map-filter");
+      applyPreFilter(filterAttr);
+      renderMarkers();
       openMapOverlay();
     });
   });
