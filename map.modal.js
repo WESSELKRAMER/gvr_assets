@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <path d="M0 19.2C1.5 19.2 2.5 19.5 4 18C5.5 19.66 8.5 19.66 10 18C11.5 19.66 14.5 19.66 16 18C17.5 19.5 18.5 19.2 20 19.2" stroke="currentColor" stroke-width="1.5"/>
       </svg>
     `,
-    "routes-kaarten": `<!-- unchanged -->`
+    "routes-kaarten": ``
   };
 
   function normalizeCategory(value) {
@@ -97,8 +97,6 @@ document.addEventListener("DOMContentLoaded", () => {
     console.warn("No valid map locations found in .map-data-item");
     return;
   }
-
-  // ─── Main map ────────────────────────────────────────────────────────────────
 
   const map = new maplibregl.Map({
     container: "interactive-map",
@@ -164,13 +162,6 @@ document.addEventListener("DOMContentLoaded", () => {
       .map((input) => normalizeCategory(input.value));
   }
 
-  // ─── Render markers ───────────────────────────────────────────────────────────
-  //
-  // varen-watersport has a sub-filter: "verhuurlocaties".
-  // - If "varen-watersport" is checked  → show non-verhuur varen items
-  // - If "verhuurlocaties" is checked   → show verhuur varen items
-  // - Both can be checked independently
-
   function renderMarkers() {
     removeAllMarkers();
 
@@ -188,10 +179,6 @@ document.addEventListener("DOMContentLoaded", () => {
       .forEach((item) => markers.push(makeMarker(item)));
   }
 
-  // ─── Pre-filter helper ────────────────────────────────────────────────────────
-
-  // Pass a comma-separated string like "horeca,varen-watersport,verhuurlocaties",
-  // or null/undefined to reset all checkboxes to checked.
   function applyPreFilter(filterAttr) {
     const checkboxes = document.querySelectorAll('.map-filters input[type="checkbox"]');
 
@@ -204,8 +191,6 @@ document.addEventListener("DOMContentLoaded", () => {
       checkboxes.forEach((input) => { input.checked = true; });
     }
   }
-
-  // ─── Overlay open / close ─────────────────────────────────────────────────────
 
   function openMapOverlay() {
     mapOverlay.classList.remove("is-hidden");
@@ -223,25 +208,11 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.style.overflow = "";
   }
 
-  // ─── Minimap ──────────────────────────────────────────────────────────────────
-
-  // Finds all elements with [data-minimap] and initialises a non-interactive
-  // MapLibre map inside each one. Clicking anywhere on the minimap container
-  // opens the full overlay, optionally pre-filtered via data-map-filter on the
-  // same element (or a closest [data-map-open] ancestor).
-  //
-  // Webflow setup:
-  //   1. Replace the placeholder image with a plain <div> block.
-  //   2. Give it the custom attribute:  data-minimap
-  //   3. Optionally add:               data-map-filter="eilanden"
-  //   4. Make sure the div has a fixed height in Webflow (e.g. 300px).
-
   function createMinimapMarkerElement(item) {
     const el = document.createElement("div");
     el.className = "map-marker";
     el.dataset.cat = item.category;
     el.setAttribute("aria-label", item.title);
-    // Smaller scale for minimap, no pointer events so clicks pass through to the minimap container
     el.style.cssText = "transform:scale(0.7);transform-origin:center;pointer-events:none;";
 
     const iconSvg = CATEGORY_SVGS[item.category];
@@ -255,7 +226,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function getMinimapVisibleItems(filterAttr) {
     const activeCats = filterAttr
       ? filterAttr.split(",").map((s) => normalizeCategory(s.trim()))
-      : null; // null = show all
+      : null;
 
     const showVaren = !activeCats || activeCats.includes("varen-watersport");
     const showVerhuur = !activeCats || activeCats.includes("verhuurlocaties");
@@ -270,14 +241,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function initMinimaps() {
     document.querySelectorAll("[data-minimap]").forEach((el) => {
-      // Prevent double-init
       if (el.dataset.minimapReady) return;
       el.dataset.minimapReady = "true";
 
       el.style.cursor = "pointer";
 
-      // Resolve the filter: prefer data-map-filter on the element itself,
-      // then fall back to a [data-map-open] ancestor's attribute.
       function getFilter() {
         if (el.hasAttribute("data-map-filter")) {
           return el.getAttribute("data-map-filter") || null;
@@ -315,15 +283,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ─── Init ─────────────────────────────────────────────────────────────────────
-
   map.on("load", () => {
     renderMarkers();
     initMinimaps();
   });
 
   document.querySelectorAll('.map-filters input[type="checkbox"]').forEach((input) => {
-    // Prevent sub-checkbox clicks (verhuurlocaties) from toggling the parent label
     if (input.closest(".map-filter-item--sub")) {
       input.addEventListener("click", (e) => e.stopPropagation());
     }
@@ -334,10 +299,18 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // data-map-open triggers (buttons, links, etc.) — minimap clicks go through
-  // their own listener above; this handles all other triggers on the page.
+  document.querySelectorAll(".map-filter-sub-toggle").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const sub = btn.closest(".map-filter-item").querySelector(".map-filter-sub");
+      const isOpen = !sub.classList.contains("is-hidden");
+      sub.classList.toggle("is-hidden", isOpen);
+      btn.setAttribute("aria-expanded", isOpen ? "false" : "true");
+    });
+  });
+
   document.querySelectorAll("[data-map-open]").forEach((trigger) => {
-    // Skip elements that are themselves minimaps (already handled above)
     if (trigger.hasAttribute("data-minimap")) return;
 
     trigger.addEventListener("click", (event) => {
@@ -361,8 +334,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-
-// ─── Filter panel toggle ────────────────────────────────────────────────────────
 
 document.addEventListener("DOMContentLoaded", () => {
   const filtersBox = document.querySelector(".map-filters");
