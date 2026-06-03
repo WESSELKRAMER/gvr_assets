@@ -81,6 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
           id: item.getAttribute("data-id") || `map-item-${index}`,
           title: item.getAttribute("data-title") || "Untitled",
           category: normalizeCategory(item.getAttribute("data-category")),
+          verhuur: item.getAttribute("data-verhuur") === "true",
           lat,
           lng,
           url: item.getAttribute("data-url") || "#",
@@ -163,17 +164,33 @@ document.addEventListener("DOMContentLoaded", () => {
       .map((input) => normalizeCategory(input.value));
   }
 
+  // ─── Render markers ───────────────────────────────────────────────────────────
+  //
+  // varen-watersport has a sub-filter: "verhuurlocaties".
+  // - If "varen-watersport" is checked  → show non-verhuur varen items
+  // - If "verhuurlocaties" is checked   → show verhuur varen items
+  // - Both can be checked independently
+
   function renderMarkers() {
     removeAllMarkers();
+
     const activeCats = getActiveCategories();
+    const showVaren = activeCats.includes("varen-watersport");
+    const showVerhuur = activeCats.includes("verhuurlocaties");
+
     mapLocations
-      .filter((item) => activeCats.includes(item.category))
+      .filter((item) => {
+        if (item.category === "varen-watersport") {
+          return item.verhuur ? showVerhuur : showVaren;
+        }
+        return activeCats.includes(item.category);
+      })
       .forEach((item) => markers.push(makeMarker(item)));
   }
 
   // ─── Pre-filter helper ────────────────────────────────────────────────────────
 
-  // Pass a comma-separated string like "horeca,varen-watersport",
+  // Pass a comma-separated string like "horeca,varen-watersport,verhuurlocaties",
   // or null/undefined to reset all checkboxes to checked.
   function applyPreFilter(filterAttr) {
     const checkboxes = document.querySelectorAll('.map-filters input[type="checkbox"]');
@@ -235,13 +252,28 @@ document.addEventListener("DOMContentLoaded", () => {
     return el;
   }
 
+  function getMinimapVisibleItems(filterAttr) {
+    const activeCats = filterAttr
+      ? filterAttr.split(",").map((s) => normalizeCategory(s.trim()))
+      : null; // null = show all
+
+    const showVaren = !activeCats || activeCats.includes("varen-watersport");
+    const showVerhuur = !activeCats || activeCats.includes("verhuurlocaties");
+
+    return mapLocations.filter((item) => {
+      if (item.category === "varen-watersport") {
+        return item.verhuur ? showVerhuur : showVaren;
+      }
+      return !activeCats || activeCats.includes(item.category);
+    });
+  }
+
   function initMinimaps() {
     document.querySelectorAll("[data-minimap]").forEach((el) => {
       // Prevent double-init
       if (el.dataset.minimapReady) return;
       el.dataset.minimapReady = "true";
 
-      // Pointer cursor so it feels clickable
       el.style.cursor = "pointer";
 
       // Resolve the filter: prefer data-map-filter on the element itself,
@@ -266,21 +298,12 @@ document.addEventListener("DOMContentLoaded", () => {
       minimap.on("load", () => {
         minimap.resize();
 
-        // Determine which categories to show based on the filter
-        const filterAttr = getFilter();
-        const activeCats = filterAttr
-          ? filterAttr.split(",").map((s) => normalizeCategory(s.trim()))
-          : mapLocations.map((item) => item.category); // no filter = all
-
-        // Add markers for matching locations
-        mapLocations
-          .filter((item) => activeCats.includes(item.category))
-          .forEach((item) => {
-            const markerEl = createMinimapMarkerElement(item);
-            new maplibregl.Marker({ element: markerEl })
-              .setLngLat([item.lng, item.lat])
-              .addTo(minimap);
-          });
+        getMinimapVisibleItems(getFilter()).forEach((item) => {
+          const markerEl = createMinimapMarkerElement(item);
+          new maplibregl.Marker({ element: markerEl })
+            .setLngLat([item.lng, item.lat])
+            .addTo(minimap);
+        });
       });
 
       el.addEventListener("click", (e) => {
@@ -300,6 +323,11 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.querySelectorAll('.map-filters input[type="checkbox"]').forEach((input) => {
+    // Prevent sub-checkbox clicks (verhuurlocaties) from toggling the parent label
+    if (input.closest(".map-filter-item--sub")) {
+      input.addEventListener("click", (e) => e.stopPropagation());
+    }
+
     input.addEventListener("change", () => {
       renderMarkers();
       map.resize();
