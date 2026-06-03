@@ -110,6 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
   map.addControl(new maplibregl.NavigationControl(), "bottom-right");
 
   const markers = [];
+  let activeSingleId = null;
 
   function buildPopupHtml(item) {
     const title = escapeHtml(item.title);
@@ -165,11 +166,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderMarkers(singleId) {
+    const id = singleId !== undefined ? singleId : activeSingleId;
     removeAllMarkers();
 
-    if (singleId) {
+    if (id) {
       mapLocations
-        .filter((item) => item.mapId === singleId.trim().toLowerCase())
+        .filter((item) => item.mapId === id.trim().toLowerCase())
         .forEach((item) => markers.push(makeMarker(item)));
       return;
     }
@@ -226,6 +228,8 @@ document.addEventListener("DOMContentLoaded", () => {
   function closeMapOverlay() {
     mapOverlay.classList.add("is-hidden");
     document.body.style.overflow = "";
+    activeSingleId = null;
+    renderMarkers();
   }
 
   function createMinimapMarkerElement(item) {
@@ -314,6 +318,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (isSingle) {
           console.log("[map] single mode, singleId:", singleId);
+          activeSingleId = singleId;
           renderMarkers(singleId);
           openMapOverlayAtItem(visibleItems[0]);
         } else {
