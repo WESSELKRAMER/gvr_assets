@@ -219,6 +219,22 @@ document.addEventListener("DOMContentLoaded", () => {
   //   3. Optionally add:               data-map-filter="eilanden"
   //   4. Make sure the div has a fixed height in Webflow (e.g. 300px).
 
+  function createMinimapMarkerElement(item) {
+    const el = document.createElement("div");
+    el.className = "map-marker";
+    el.dataset.cat = item.category;
+    el.setAttribute("aria-label", item.title);
+    // Smaller scale for minimap, no pointer events so clicks pass through to the minimap container
+    el.style.cssText = "transform:scale(0.7);transform-origin:center;pointer-events:none;";
+
+    const iconSvg = CATEGORY_SVGS[item.category];
+    if (iconSvg) {
+      el.innerHTML = `<span class="map-marker-icon" aria-hidden="true">${iconSvg}</span>`;
+    }
+
+    return el;
+  }
+
   function initMinimaps() {
     document.querySelectorAll("[data-minimap]").forEach((el) => {
       // Prevent double-init
@@ -227,15 +243,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Pointer cursor so it feels clickable
       el.style.cursor = "pointer";
-
-      const minimap = new maplibregl.Map({
-        container: el,
-        style: "https://tiles.openfreemap.org/styles/liberty",
-        center: DEFAULT_CENTER,
-        zoom: MINIMAP_ZOOM,
-        interactive: false,
-        attributionControl: false
-      });
 
       // Resolve the filter: prefer data-map-filter on the element itself,
       // then fall back to a [data-map-open] ancestor's attribute.
@@ -247,15 +254,41 @@ document.addEventListener("DOMContentLoaded", () => {
         return ancestor ? (ancestor.getAttribute("data-map-filter") || null) : null;
       }
 
+      const minimap = new maplibregl.Map({
+        container: el,
+        style: "https://tiles.openfreemap.org/styles/liberty",
+        center: DEFAULT_CENTER,
+        zoom: MINIMAP_ZOOM,
+        interactive: false,
+        attributionControl: false
+      });
+
+      minimap.on("load", () => {
+        minimap.resize();
+
+        // Determine which categories to show based on the filter
+        const filterAttr = getFilter();
+        const activeCats = filterAttr
+          ? filterAttr.split(",").map((s) => normalizeCategory(s.trim()))
+          : mapLocations.map((item) => item.category); // no filter = all
+
+        // Add markers for matching locations
+        mapLocations
+          .filter((item) => activeCats.includes(item.category))
+          .forEach((item) => {
+            const markerEl = createMinimapMarkerElement(item);
+            new maplibregl.Marker({ element: markerEl })
+              .setLngLat([item.lng, item.lat])
+              .addTo(minimap);
+          });
+      });
+
       el.addEventListener("click", (e) => {
         e.preventDefault();
         applyPreFilter(getFilter());
         renderMarkers();
         openMapOverlay();
       });
-
-      // Resize once the map is loaded to handle any container size quirks
-      minimap.on("load", () => minimap.resize());
     });
   }
 
