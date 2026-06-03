@@ -313,7 +313,7 @@ document.addEventListener("DOMContentLoaded", () => {
         e.preventDefault();
 
         if (isSingle) {
-          applyPreFilter(visibleItems[0].category);
+          console.log("[map] single mode, singleId:", singleId);
           renderMarkers(singleId);
           openMapOverlayAtItem(visibleItems[0]);
         } else {
