@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const DEFAULT_CENTER = [5.50, 52.50];
   const DEFAULT_ZOOM = 9.5;
   const MINIMAP_ZOOM = 7.5;
+  const MINIMAP_SINGLE_ZOOM = 11;
 
   const CATEGORY_SVGS = {
     "eilanden": `
@@ -79,6 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         return {
           id: item.getAttribute("data-id") || `map-item-${index}`,
+          mapId: (item.getAttribute("data-map-id") || "").trim().toLowerCase(),
           title: item.getAttribute("data-title") || "Untitled",
           category: normalizeCategory(item.getAttribute("data-category")),
           verhuur: item.getAttribute("data-verhuur") === "true",
@@ -203,6 +205,17 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.style.overflow = "hidden";
   }
 
+  function openMapOverlayAtItem(item) {
+    mapOverlay.classList.remove("is-hidden");
+
+    requestAnimationFrame(() => {
+      map.resize();
+      map.easeTo({ center: [item.lng, item.lat], zoom: 12, duration: 600 });
+    });
+
+    document.body.style.overflow = "hidden";
+  }
+
   function closeMapOverlay() {
     mapOverlay.classList.add("is-hidden");
     document.body.style.overflow = "";
@@ -223,7 +236,11 @@ document.addEventListener("DOMContentLoaded", () => {
     return el;
   }
 
-  function getMinimapVisibleItems(filterAttr) {
+  function getMinimapVisibleItems(filterAttr, singleId) {
+    if (singleId) {
+      return mapLocations.filter((item) => item.mapId === singleId.trim().toLowerCase());
+    }
+
     const activeCats = filterAttr
       ? filterAttr.split(",").map((s) => normalizeCategory(s.trim()))
       : null;
@@ -246,6 +263,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       el.style.cursor = "pointer";
 
+      const singleId = el.getAttribute("data-map-single") || null;
+
       function getFilter() {
         if (el.hasAttribute("data-map-filter")) {
           return el.getAttribute("data-map-filter") || null;
@@ -254,11 +273,20 @@ document.addEventListener("DOMContentLoaded", () => {
         return ancestor ? (ancestor.getAttribute("data-map-filter") || null) : null;
       }
 
+      const visibleItems = getMinimapVisibleItems(getFilter(), singleId);
+      const isSingle = singleId && visibleItems.length === 1;
+
+      const initialCenter = isSingle
+        ? [visibleItems[0].lng, visibleItems[0].lat]
+        : DEFAULT_CENTER;
+
+      const initialZoom = isSingle ? MINIMAP_SINGLE_ZOOM : MINIMAP_ZOOM;
+
       const minimap = new maplibregl.Map({
         container: el,
         style: "https://tiles.openfreemap.org/styles/liberty",
-        center: DEFAULT_CENTER,
-        zoom: MINIMAP_ZOOM,
+        center: initialCenter,
+        zoom: initialZoom,
         interactive: false,
         attributionControl: false
       });
@@ -266,7 +294,7 @@ document.addEventListener("DOMContentLoaded", () => {
       minimap.on("load", () => {
         minimap.resize();
 
-        getMinimapVisibleItems(getFilter()).forEach((item) => {
+        visibleItems.forEach((item) => {
           const markerEl = createMinimapMarkerElement(item);
           new maplibregl.Marker({ element: markerEl })
             .setLngLat([item.lng, item.lat])
@@ -276,9 +304,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
       el.addEventListener("click", (e) => {
         e.preventDefault();
-        applyPreFilter(getFilter());
-        renderMarkers();
-        openMapOverlay();
+
+        if (isSingle) {
+          applyPreFilter(visibleItems[0].category);
+          renderMarkers();
+          openMapOverlayAtItem(visibleItems[0]);
+        } else {
+          applyPreFilter(getFilter());
+          renderMarkers();
+          openMapOverlay();
+        }
       });
     });
   }
