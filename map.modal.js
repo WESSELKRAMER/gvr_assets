@@ -164,8 +164,15 @@ document.addEventListener("DOMContentLoaded", () => {
       .map((input) => normalizeCategory(input.value));
   }
 
-  function renderMarkers() {
+  function renderMarkers(singleId) {
     removeAllMarkers();
+
+    if (singleId) {
+      mapLocations
+        .filter((item) => item.mapId === singleId.trim().toLowerCase())
+        .forEach((item) => markers.push(makeMarker(item)));
+      return;
+    }
 
     const activeCats = getActiveCategories();
     const showVaren = activeCats.includes("varen-watersport");
@@ -307,7 +314,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (isSingle) {
           applyPreFilter(visibleItems[0].category);
-          renderMarkers();
+          renderMarkers(singleId);
           openMapOverlayAtItem(visibleItems[0]);
         } else {
           applyPreFilter(getFilter());
