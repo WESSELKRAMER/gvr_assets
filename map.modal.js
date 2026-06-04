@@ -263,6 +263,10 @@ document.addEventListener("DOMContentLoaded", () => {
       ? filterAttr.split(",").map((s) => normalizeCategory(s.trim()))
       : null;
 
+    if (activeCats && activeCats.includes("verhuurlocaties") && !activeCats.includes("varen-watersport")) {
+      activeCats.push("varen-watersport");
+    }
+
     const showVaren = !activeCats || activeCats.includes("varen-watersport");
     const showVerhuur = !activeCats || activeCats.includes("verhuurlocaties");
 
