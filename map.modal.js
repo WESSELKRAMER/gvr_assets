@@ -195,6 +195,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (filterAttr) {
       const requestedCats = filterAttr.split(",").map((s) => normalizeCategory(s.trim()));
+
+      // if verhuurlocaties is requested, varen-watersport must also be active
+      // so the parent checkbox doesn't block rendering
+      if (requestedCats.includes("verhuurlocaties") && !requestedCats.includes("varen-watersport")) {
+        requestedCats.push("varen-watersport");
+      }
+
       checkboxes.forEach((input) => {
         input.checked = requestedCats.includes(normalizeCategory(input.value));
       });
