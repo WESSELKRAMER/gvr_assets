@@ -10,6 +10,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const MINIMAP_ZOOM = 7.5;
   const MINIMAP_SINGLE_ZOOM = 11;
 
+  const CATEGORY_URL_PREFIXES = {
+    "eilanden": "/beleven/eilanden/",
+    "horeca": "/beleven/horeca/",
+    "overnachten": "/beleven/overnachten/",
+    "varen-watersport": "/beleven/varen-watersport/",
+    "fietsen-wandelen": "/beleven/fietsen-wandelen/"
+  };
+
   const CATEGORY_SVGS = {
     "eilanden": `
       <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -86,7 +94,15 @@ document.addEventListener("DOMContentLoaded", () => {
           verhuur: item.getAttribute("data-verhuur") === "true",
           lat,
           lng,
-          url: item.getAttribute("data-url") || "#",
+          url: (() => {
+            const raw = item.getAttribute("data-url") || "#";
+            const cat = normalizeCategory(item.getAttribute("data-category"));
+            const prefix = CATEGORY_URL_PREFIXES[cat];
+            if (prefix && raw !== "#" && !raw.startsWith("/") && !raw.startsWith("http")) {
+              return prefix + raw;
+            }
+            return raw;
+          })(),
           image: item.getAttribute("data-image") || "",
           description: item.getAttribute("data-description") || ""
         };
