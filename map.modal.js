@@ -137,7 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ${item.image ? `<img src="${item.image}" alt="${title}" style="width:100%;height:auto;border-radius:8px;margin-bottom:10px;display:block;">` : ""}
         <strong style="display:block;margin-bottom:6px;">${title}</strong>
         ${description ? `<p style="margin:0 0 10px 0;">${description}</p>` : ""}
-        <a href="${item.url}" target="_blank" rel="noopener noreferrer">Bekijk locatie</a>
+        <a href="${item.url}" ${item.url.startsWith("http") ? 'target="_blank" rel="noopener noreferrer"' : ""}>Bekijk locatie</a>
       </div>
     `;
   }
