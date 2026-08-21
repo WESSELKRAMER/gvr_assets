@@ -16,7 +16,8 @@ document.addEventListener("DOMContentLoaded", () => {
     "overnachten": "/beleven/overnachten/",
     "varen-watersport": "/beleven/varen-watersport/",
     "fietsen-wandelen": "/beleven/fietsen-wandelen/",
-    "cultuur": "/beleven/cultuur/"
+    "cultuur": "/beleven/cultuur/",
+    "natuur": "/beleven/natuur/"
   };
 
   const CATEGORY_SVGS = {
