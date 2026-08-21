@@ -60,14 +60,27 @@ document.addEventListener("DOMContentLoaded", () => {
       </svg>
     `,
 
-    // Cultuur
-    // Simpel museum / cultureel gebouw icoon.
     "cultuur": `
       <svg viewBox="0 0 22 20" fill="none" aria-hidden="true">
         <path d="M1 7L11 1L21 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/>
         <path d="M2 7H20" stroke="currentColor" stroke-width="1.5"/>
         <path d="M4 8V16M8.66667 8V16M13.3333 8V16M18 8V16" stroke="currentColor" stroke-width="1.5"/>
         <path d="M2 16H20M1 19H21" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
+      </svg>
+    `,
+
+    "natuur": `
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2C20 4 21 6.18 21 10C21 15.5 16.22 20 11 20Z"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+        <path d="M2 21C2 18 3.85 15.64 7.08 15C9.5 14.52 12 13 13 12"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
       </svg>
     `,
 
@@ -117,12 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const cat = normalizeCategory(item.getAttribute("data-category"));
             const prefix = CATEGORY_URL_PREFIXES[cat];
 
-            if (
-              prefix &&
-              raw !== "#" &&
-              !raw.startsWith("/") &&
-              !raw.startsWith("http")
-            ) {
+            if (prefix && raw !== "#" && !raw.startsWith("/") && !raw.startsWith("http")) {
               return prefix + raw;
             }
 
@@ -149,10 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
     zoom: DEFAULT_ZOOM
   });
 
-  map.addControl(
-    new maplibregl.NavigationControl(),
-    "bottom-right"
-  );
+  map.addControl(new maplibregl.NavigationControl(), "bottom-right");
 
   const markers = [];
   let activeSingleId = null;
@@ -163,39 +168,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     return `
       <div class="map-popup-card" style="min-width:220px;">
-        ${
-          item.image
-            ? `<img src="${item.image}" alt="${title}" style="width:100%;height:auto;border-radius:8px;margin-bottom:10px;display:block;">`
-            : ""
-        }
-
-        <strong style="display:block;margin-bottom:6px;">
-          ${title}
-        </strong>
-
-        ${
-          description
-            ? `<p style="margin:0 0 10px 0;">${description}</p>`
-            : ""
-        }
-
-        <a
-          href="${item.url}"
-          ${
-            item.url.startsWith("http")
-              ? 'target="_blank" rel="noopener noreferrer"'
-              : ""
-          }
-        >
-          Bekijk locatie
-        </a>
+        ${item.image ? `<img src="${item.image}" alt="${title}" style="width:100%;height:auto;border-radius:8px;margin-bottom:10px;display:block;">` : ""}
+        <strong style="display:block;margin-bottom:6px;">${title}</strong>
+        ${description ? `<p style="margin:0 0 10px 0;">${description}</p>` : ""}
+        <a href="${item.url}" ${item.url.startsWith("http") ? 'target="_blank" rel="noopener noreferrer"' : ""}>Bekijk locatie</a>
       </div>
     `;
   }
 
   function createMarkerElement(item) {
     const el = document.createElement("button");
-
     el.className = "map-marker";
     el.type = "button";
     el.dataset.cat = item.category;
@@ -204,11 +186,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const iconSvg = CATEGORY_SVGS[item.category];
 
     if (iconSvg) {
-      el.innerHTML = `
-        <span class="map-marker-icon" aria-hidden="true">
-          ${iconSvg}
-        </span>
-      `;
+      el.innerHTML = `<span class="map-marker-icon" aria-hidden="true">${iconSvg}</span>`;
     }
 
     return el;
@@ -229,11 +207,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .setPopup(popup)
       .addTo(map);
 
-    return {
-      marker,
-      data: item,
-      el
-    };
+    return { marker, data: item, el };
   }
 
   function removeAllMarkers() {
@@ -242,76 +216,46 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function getActiveCategories() {
-    return [
-      ...document.querySelectorAll(
-        '.map-filters input[type="checkbox"]:checked'
-      )
-    ].map((input) => normalizeCategory(input.value));
+    return [...document.querySelectorAll('.map-filters input[type="checkbox"]:checked')]
+      .map((input) => normalizeCategory(input.value));
   }
 
   function renderMarkers(singleId) {
-    const id =
-      singleId !== undefined
-        ? singleId
-        : activeSingleId;
+    const id = singleId !== undefined ? singleId : activeSingleId;
 
     removeAllMarkers();
 
-    // Single-location mode
     if (id) {
       mapLocations
-        .filter(
-          (item) =>
-            item.mapId === id.trim().toLowerCase()
-        )
-        .forEach((item) => {
-          markers.push(makeMarker(item));
-        });
+        .filter((item) => item.mapId === id.trim().toLowerCase())
+        .forEach((item) => markers.push(makeMarker(item)));
 
       return;
     }
 
     const activeCats = getActiveCategories();
-
-    const showVaren =
-      activeCats.includes("varen-watersport");
-
-    const showVerhuur =
-      activeCats.includes("verhuurlocaties");
+    const showVaren = activeCats.includes("varen-watersport");
+    const showVerhuur = activeCats.includes("verhuurlocaties");
 
     mapLocations
       .filter((item) => {
-        // Verhuurlocaties zijn een subtype van varen/watersport
         if (item.category === "varen-watersport") {
-          return item.verhuur
-            ? showVerhuur
-            : showVaren;
+          return item.verhuur ? showVerhuur : showVaren;
         }
 
-        // Alle normale categorieën:
-        // eilanden, horeca, overnachten,
-        // fietsen-wandelen, cultuur, etc.
         return activeCats.includes(item.category);
       })
-      .forEach((item) => {
-        markers.push(makeMarker(item));
-      });
+      .forEach((item) => markers.push(makeMarker(item)));
   }
 
   function applyPreFilter(filterAttr) {
-    const checkboxes = document.querySelectorAll(
-      '.map-filters input[type="checkbox"]'
-    );
+    const checkboxes = document.querySelectorAll('.map-filters input[type="checkbox"]');
 
     if (filterAttr) {
       const requestedCats = filterAttr
         .split(",")
-        .map((s) =>
-          normalizeCategory(s.trim())
-        );
+        .map((s) => normalizeCategory(s.trim()));
 
-      // Als verhuurlocaties expliciet gevraagd wordt,
-      // activeren we ook varen-watersport.
       if (
         requestedCats.includes("verhuurlocaties") &&
         !requestedCats.includes("varen-watersport")
@@ -320,9 +264,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       checkboxes.forEach((input) => {
-        input.checked = requestedCats.includes(
-          normalizeCategory(input.value)
-        );
+        input.checked = requestedCats.includes(normalizeCategory(input.value));
       });
     } else {
       checkboxes.forEach((input) => {
@@ -365,61 +307,37 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function closeMapOverlay() {
     mapOverlay.classList.add("is-hidden");
-
     document.body.style.overflow = "";
-
     activeSingleId = null;
-
     renderMarkers();
   }
 
   function createMinimapMarkerElement(item) {
     const el = document.createElement("div");
-
     el.className = "map-marker";
     el.dataset.cat = item.category;
-    el.setAttribute(
-      "aria-label",
-      item.title
-    );
-
+    el.setAttribute("aria-label", item.title);
     el.style.cssText =
       "transform:scale(0.7);transform-origin:center;pointer-events:none;";
 
-    const iconSvg =
-      CATEGORY_SVGS[item.category];
+    const iconSvg = CATEGORY_SVGS[item.category];
 
     if (iconSvg) {
-      el.innerHTML = `
-        <span class="map-marker-icon" aria-hidden="true">
-          ${iconSvg}
-        </span>
-      `;
+      el.innerHTML = `<span class="map-marker-icon" aria-hidden="true">${iconSvg}</span>`;
     }
 
     return el;
   }
 
-  function getMinimapVisibleItems(
-    filterAttr,
-    singleId
-  ) {
-    // Specifieke CMS-locatie
+  function getMinimapVisibleItems(filterAttr, singleId) {
     if (singleId) {
       return mapLocations.filter(
-        (item) =>
-          item.mapId ===
-          singleId.trim().toLowerCase()
+        (item) => item.mapId === singleId.trim().toLowerCase()
       );
     }
 
-    // Categorie-filter
     const activeCats = filterAttr
-      ? filterAttr
-          .split(",")
-          .map((s) =>
-            normalizeCategory(s.trim())
-          )
+      ? filterAttr.split(",").map((s) => normalizeCategory(s.trim()))
       : null;
 
     if (
@@ -431,154 +349,101 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const showVaren =
-      !activeCats ||
-      activeCats.includes("varen-watersport");
+      !activeCats || activeCats.includes("varen-watersport");
 
     const showVerhuur =
-      !activeCats ||
-      activeCats.includes("verhuurlocaties");
+      !activeCats || activeCats.includes("verhuurlocaties");
 
     return mapLocations.filter((item) => {
-      if (
-        item.category ===
-        "varen-watersport"
-      ) {
-        return item.verhuur
-          ? showVerhuur
-          : showVaren;
+      if (item.category === "varen-watersport") {
+        return item.verhuur ? showVerhuur : showVaren;
       }
 
-      return (
-        !activeCats ||
-        activeCats.includes(item.category)
-      );
+      return !activeCats || activeCats.includes(item.category);
     });
   }
 
   function initMinimaps() {
-    document
-      .querySelectorAll("[data-minimap]")
-      .forEach((el) => {
-        // Voorkom dubbele initialisatie
-        if (el.dataset.minimapReady) return;
+    document.querySelectorAll("[data-minimap]").forEach((el) => {
+      if (el.dataset.minimapReady) return;
 
-        el.dataset.minimapReady = "true";
+      el.dataset.minimapReady = "true";
+      el.style.cursor = "pointer";
 
-        el.style.cursor = "pointer";
+      const singleId =
+        el.getAttribute("data-map-single") || null;
 
-        const singleId =
-          el.getAttribute("data-map-single") ||
-          null;
-
-        function getFilter() {
-          // Filter direct op minimap
-          if (
-            el.hasAttribute("data-map-filter")
-          ) {
-            return (
-              el.getAttribute(
-                "data-map-filter"
-              ) || null
-            );
-          }
-
-          // Of filter op bovenliggend
-          // data-map-open element
-          const ancestor =
-            el.closest("[data-map-open]");
-
-          return ancestor
-            ? ancestor.getAttribute(
-                "data-map-filter"
-              ) || null
-            : null;
+      function getFilter() {
+        if (el.hasAttribute("data-map-filter")) {
+          return el.getAttribute("data-map-filter") || null;
         }
 
-        const visibleItems =
-          getMinimapVisibleItems(
-            getFilter(),
-            singleId
-          );
+        const ancestor = el.closest("[data-map-open]");
 
-        const isSingle =
-          singleId &&
-          visibleItems.length === 1;
+        return ancestor
+          ? ancestor.getAttribute("data-map-filter") || null
+          : null;
+      }
 
-        const initialCenter = isSingle
-          ? [
-              visibleItems[0].lng,
-              visibleItems[0].lat
-            ]
-          : DEFAULT_CENTER;
+      const visibleItems = getMinimapVisibleItems(
+        getFilter(),
+        singleId
+      );
 
-        const initialZoom = isSingle
-          ? MINIMAP_SINGLE_ZOOM
-          : MINIMAP_ZOOM;
+      const isSingle =
+        singleId && visibleItems.length === 1;
 
-        const minimap =
-          new maplibregl.Map({
-            container: el,
-            style:
-              "https://tiles.openfreemap.org/styles/liberty",
-            center: initialCenter,
-            zoom: initialZoom,
-            interactive: false,
-            attributionControl: false
-          });
+      const initialCenter = isSingle
+        ? [visibleItems[0].lng, visibleItems[0].lat]
+        : DEFAULT_CENTER;
 
-        minimap.on("load", () => {
-          minimap.resize();
+      const initialZoom = isSingle
+        ? MINIMAP_SINGLE_ZOOM
+        : MINIMAP_ZOOM;
 
-          visibleItems.forEach(
-            (item) => {
-              const markerEl =
-                createMinimapMarkerElement(
-                  item
-                );
-
-              new maplibregl.Marker({
-                element: markerEl
-              })
-                .setLngLat([
-                  item.lng,
-                  item.lat
-                ])
-                .addTo(minimap);
-            }
-          );
-        });
-
-        el.addEventListener(
-          "click",
-          (e) => {
-            e.preventDefault();
-
-            if (isSingle) {
-              console.log(
-                "[map] single mode, singleId:",
-                singleId
-              );
-
-              activeSingleId =
-                singleId;
-
-              renderMarkers(singleId);
-
-              openMapOverlayAtItem(
-                visibleItems[0]
-              );
-            } else {
-              applyPreFilter(
-                getFilter()
-              );
-
-              renderMarkers();
-
-              openMapOverlay();
-            }
-          }
-        );
+      const minimap = new maplibregl.Map({
+        container: el,
+        style: "https://tiles.openfreemap.org/styles/liberty",
+        center: initialCenter,
+        zoom: initialZoom,
+        interactive: false,
+        attributionControl: false
       });
+
+      minimap.on("load", () => {
+        minimap.resize();
+
+        visibleItems.forEach((item) => {
+          const markerEl = createMinimapMarkerElement(item);
+
+          new maplibregl.Marker({
+            element: markerEl
+          })
+            .setLngLat([item.lng, item.lat])
+            .addTo(minimap);
+        });
+      });
+
+      el.addEventListener("click", (e) => {
+        e.preventDefault();
+
+        if (isSingle) {
+          console.log("[map] single mode, singleId:", singleId);
+
+          activeSingleId = singleId;
+
+          renderMarkers(singleId);
+
+          openMapOverlayAtItem(visibleItems[0]);
+        } else {
+          applyPreFilter(getFilter());
+
+          renderMarkers();
+
+          openMapOverlay();
+        }
+      });
+    });
   }
 
   map.on("load", () => {
@@ -586,133 +451,84 @@ document.addEventListener("DOMContentLoaded", () => {
     initMinimaps();
   });
 
-  // Filter checkboxes
   document
-    .querySelectorAll(
-      '.map-filters input[type="checkbox"]'
-    )
+    .querySelectorAll('.map-filters input[type="checkbox"]')
     .forEach((input) => {
-      // Subfilter click niet laten
-      // bubbelen naar parent controls
-      if (
-        input.closest(
-          ".map-filter-item--sub"
-        )
-      ) {
-        input.addEventListener(
-          "click",
-          (e) => e.stopPropagation()
-        );
+      if (input.closest(".map-filter-item--sub")) {
+        input.addEventListener("click", (e) => e.stopPropagation());
       }
 
-      input.addEventListener(
-        "change",
-        () => {
-          renderMarkers();
-          map.resize();
-        }
-      );
+      input.addEventListener("change", () => {
+        renderMarkers();
+        map.resize();
+      });
     });
 
-  // Open/dichtklappen van subfilters
   document
-    .querySelectorAll(
-      ".map-filter-sub-toggle"
-    )
+    .querySelectorAll(".map-filter-sub-toggle")
     .forEach((btn) => {
-      btn.addEventListener(
-        "click",
-        (e) => {
-          e.preventDefault();
-          e.stopPropagation();
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
 
-          const sub = btn
-            .closest(".map-filter-item")
-            .querySelector(
-              ".map-filter-sub"
-            );
+        const sub = btn
+          .closest(".map-filter-item")
+          .querySelector(".map-filter-sub");
 
-          const isOpen =
-            !sub.classList.contains(
-              "is-hidden"
-            );
+        const isOpen =
+          !sub.classList.contains("is-hidden");
 
-          sub.classList.toggle(
-            "is-hidden",
-            isOpen
-          );
+        sub.classList.toggle(
+          "is-hidden",
+          isOpen
+        );
 
-          btn.setAttribute(
-            "aria-expanded",
-            isOpen
-              ? "false"
-              : "true"
-          );
-        }
-      );
+        btn.setAttribute(
+          "aria-expanded",
+          isOpen ? "false" : "true"
+        );
+      });
     });
 
-  // Algemene knoppen die de kaart openen
   document
-    .querySelectorAll(
-      "[data-map-open]"
-    )
+    .querySelectorAll("[data-map-open]")
     .forEach((trigger) => {
-      // Minimaps regelen hun eigen click
-      if (
-        trigger.hasAttribute(
-          "data-minimap"
-        )
-      ) {
-        return;
-      }
+      if (trigger.hasAttribute("data-minimap")) return;
 
-      trigger.addEventListener(
-        "click",
-        (event) => {
-          event.preventDefault();
+      trigger.addEventListener("click", (event) => {
+        event.preventDefault();
 
-          const filterAttr =
-            trigger.getAttribute(
-              "data-map-filter"
-            );
+        const filterAttr =
+          trigger.getAttribute("data-map-filter");
 
-          applyPreFilter(filterAttr);
+        applyPreFilter(filterAttr);
 
-          renderMarkers();
+        renderMarkers();
 
-          openMapOverlay();
-        }
-      );
+        openMapOverlay();
+      });
     });
 
-  // Sluitknop
   mapCloseBtn?.addEventListener(
     "click",
     () => closeMapOverlay()
   );
 
-  // Klik buiten kaart
   mapOverlay.addEventListener(
     "click",
     (event) => {
-      if (
-        event.target === mapOverlay
-      ) {
+      if (event.target === mapOverlay) {
         closeMapOverlay();
       }
     }
   );
 
-  // ESC
   document.addEventListener(
     "keydown",
     (event) => {
       if (
         event.key === "Escape" &&
-        !mapOverlay.classList.contains(
-          "is-hidden"
-        )
+        !mapOverlay.classList.contains("is-hidden")
       ) {
         closeMapOverlay();
       }
@@ -721,104 +537,82 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-// ----------------------------------------
-// MAP FILTER PANEL OPEN / CLOSE
-// ----------------------------------------
+document.addEventListener("DOMContentLoaded", () => {
+  const filtersBox =
+    document.querySelector(".map-filters");
 
-document.addEventListener(
-  "DOMContentLoaded",
-  () => {
-    const filtersBox =
-      document.querySelector(
-        ".map-filters"
-      );
+  const filtersToggle =
+    document.querySelector(".map-filters-toggle");
 
-    const filtersToggle =
-      document.querySelector(
-        ".map-filters-toggle"
-      );
+  const arrow =
+    document.querySelector(".map-filters-arrow svg");
 
-    const arrow =
-      document.querySelector(
-        ".map-filters-arrow svg"
-      );
-
-    if (
-      !filtersBox ||
-      !filtersToggle ||
-      !arrow ||
-      typeof gsap === "undefined"
-    ) {
-      return;
-    }
-
-    const mobileBreakpoint = 991;
-
-    function setArrow(
-      isOpen,
-      animate = true
-    ) {
-      gsap.killTweensOf(arrow);
-
-      if (animate) {
-        gsap.to(arrow, {
-          scaleY: isOpen ? 1 : -1,
-          duration: 0.2,
-          ease: "power2.out",
-          overwrite: true
-        });
-      } else {
-        gsap.set(arrow, {
-          scaleY: isOpen ? 1 : -1
-        });
-      }
-    }
-
-    function setState(
-      isOpen,
-      animateArrow = false
-    ) {
-      filtersBox.classList.toggle(
-        "is-open",
-        isOpen
-      );
-
-      filtersToggle.setAttribute(
-        "aria-expanded",
-        isOpen ? "true" : "false"
-      );
-
-      setArrow(
-        isOpen,
-        animateArrow
-      );
-    }
-
-    function setDefaultState() {
-      setState(
-        window.innerWidth >
-          mobileBreakpoint,
-        false
-      );
-    }
-
-    filtersToggle.addEventListener(
-      "click",
-      () => {
-        setState(
-          !filtersBox.classList.contains(
-            "is-open"
-          ),
-          true
-        );
-      }
-    );
-
-    window.addEventListener(
-      "resize",
-      setDefaultState
-    );
-
-    setDefaultState();
+  if (
+    !filtersBox ||
+    !filtersToggle ||
+    !arrow ||
+    typeof gsap === "undefined"
+  ) {
+    return;
   }
-);
+
+  const mobileBreakpoint = 991;
+
+  function setArrow(isOpen, animate = true) {
+    gsap.killTweensOf(arrow);
+
+    if (animate) {
+      gsap.to(arrow, {
+        scaleY: isOpen ? 1 : -1,
+        duration: 0.2,
+        ease: "power2.out",
+        overwrite: true
+      });
+    } else {
+      gsap.set(arrow, {
+        scaleY: isOpen ? 1 : -1
+      });
+    }
+  }
+
+  function setState(isOpen, animateArrow = false) {
+    filtersBox.classList.toggle(
+      "is-open",
+      isOpen
+    );
+
+    filtersToggle.setAttribute(
+      "aria-expanded",
+      isOpen ? "true" : "false"
+    );
+
+    setArrow(
+      isOpen,
+      animateArrow
+    );
+  }
+
+  function setDefaultState() {
+    setState(
+      window.innerWidth > mobileBreakpoint,
+      false
+    );
+  }
+
+  filtersToggle.addEventListener(
+    "click",
+    () => {
+      setState(
+        !filtersBox.classList.contains("is-open"),
+        true
+      );
+    }
+  );
+
+  window.addEventListener(
+    "resize",
+    setDefaultState
+  );
+
+  setDefaultState();
+});
